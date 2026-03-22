@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I Love You - 全世界都是爱你的形状</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💕</text></svg>">
+  <link rel="preconnect" href="https://fonts.loli.net">
+  <link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
+  <link href="https://fonts.loli.net/css2?family=Great+Vibes&family=Ma+Shan+Zheng&family=Dancing+Script:wght@400;600;700&family=Noto+Serif+SC:wght@200;300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --pink-1: #ff6b9d;
+      --pink-2: #c44569;
+      --pink-3: #ff8fb1;
+      --rose: #e84393;
+      --soft: #fd79a8;
+      --glow: rgba(255,107,157,0.4);
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: 'Noto Serif SC', serif;
+      color: #f5e6f0;
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' fill='%23ff6b9d'/%3E%3C/svg%3E") 12 12, auto;
+      background: #0a0412;
+      user-select: none;
+    }
+
+    /* Star canvas */
+    #starCanvas {
+      position: fixed; inset: 0; z-index: 0;
+    }
+
+    /* Big heart container */
+    #bigHeart {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Floating layer */
+    #floatLayer {
+      position: fixed; inset: 0; z-index: 2;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* Interaction layer (click, mouse) */
+    #interactLayer {
+      position: fixed; inset: 0; z-index: 3;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* I love you texts layer */
+    #textLayer {
+      position: fixed; inset: 0; z-index: 4;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* Center message */
+    .center-msg {
+      position: fixed;
+      bottom: 12%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      text-align: center;
+      pointer-events: none;
+    }
+    .center-msg .line1 {
+      font-family: 'Great Vibes', cursive;
+      font-size: clamp(32px, 7vw, 68px);
+      color: #fff;
+      text-shadow: 0 0 40px rgba(255,107,157,0.6), 0 0 80px rgba(255,107,157,0.3);
+      animation: breathe 3s ease-in-out infinite;
+    }
+    .center-msg .line2 {
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: clamp(16px, 3vw, 26px);
+      color: rgba(255,200,220,0.6);
+      margin-top: 8px;
+      letter-spacing: 6px;
+      animation: breathe 3s ease-in-out infinite;
+      animation-delay: 0.5s;
+    }
+    @keyframes breathe {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.03); }
+    }
+
+    /* Hint */
+    .hint {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      font-family: 'Dancing Script', cursive;
+      font-size: 14px;
+      color: rgba(255,200,220,0.3);
+      letter-spacing: 3px;
+      animation: fadeInHint 3s ease forwards;
+      pointer-events: none;
+    }
+    @keyframes fadeInHint {
+      0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+      100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* Vignette */
+    .vignette {
+      position: fixed; inset: 0; z-index: 6;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 35%, rgba(5,2,10,0.6) 100%);
+    }
+
+    /* I-love-you text style */
+    .ily-text {
+      position: absolute;
+      pointer-events: none;
+      white-space: nowrap;
+      font-weight: 300;
+      text-shadow: 0 0 15px var(--glow);
+    }
+
+    /* Floating heart */
+    .float-heart {
+      position: absolute;
+      pointer-events: none;
+    }
+    
+
+    /* Trail heart */
+    .trail-heart {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+      .center-msg .line1 { font-size: clamp(28px, 8vw, 50px); }
+      .hint { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="starCanvas"></canvas>
+  <div id="bigHeart"></div>
+  <div id="floatLayer"></div>
+  <div id="interactLayer"></div>
+  <div id="textLayer"></div>
+  <div class="vignette"></div>
+
+  <div class="center-msg">
+    <div class="line1">I Love You</div>
+    <div class="line2">全世界都是爱你的形状</div>
+  </div>
+
+  <div class="hint">click anywhere . touch anything . it's all love</div>
+
+  <script>
+    // =============================================
+    // "I love you" in many languages
+    // =============================================
+    const LOVE_TEXTS = [
+      { text: '我爱你', lang: '中文', font: "'Ma Shan Zheng', cursive" },
+      { text: 'I love you', lang: 'English', font: "'Great Vibes', cursive" },
+      { text: '愛してる', lang: '日本語', font: "'Noto Serif SC', serif" },
+      { text: '사랑해요', lang: '한국어', font: "'Noto Serif SC', serif" },
+      { text: 'Je t\'aime', lang: 'Français', font: "'Playfair Display', serif" },
+      { text: 'Te amo', lang: 'Español', font: "'Dancing Script', cursive" },
+      { text: 'Ti amo', lang: 'Italiano', font: "'Playfair Display', serif" },
+      { text: 'Ich liebe dich', lang: 'Deutsch', font: "'Playfair Display', serif" },
+      { text: 'Я тебя люблю', lang: 'Русский', font: "'Noto Serif SC', serif" },
+      { text: 'Eu te amo', lang: 'Português', font: "'Dancing Script', cursive" },
+      { text: 'Seni seviyorum', lang: 'Türkçe', font: "'Playfair Display', serif" },
+      { text: 'Ik hou van je', lang: 'Nederlands', font: "'Playfair Display', serif" },
+      { text: 'Σ\'αγαπώ', lang: 'Ελληνικά', font: "'Noto Serif SC', serif" },
+      { text: 'أحبك', lang: 'العربية', font: "'Noto Serif SC', serif" },
+      { text: 'ฉันรักคุณ', lang: 'ไทย', font: "'Noto Serif SC', serif" },
+      { text: 'Kocham cię', lang: 'Polski', font: "'Playfair Display', serif" },
+      { text: 'Jag älskar dig', lang: 'Svenska', font: "'Playfair Display', serif" },
+      { text: 'Mahal kita', lang: 'Filipino', font: "'Dancing Script', cursive" },
+      { text: 'Anh yêu em', lang: 'Tiếng Việt', font: "'Dancing Script', cursive" },
+      { text: 'मैं तुमसे प्यार करता हूँ', lang: 'हिन्दी', font: "'Noto Serif SC', serif" },
+      { text: 'Aloha wau iā ʻoe', lang: 'Hawaiian', font: "'Great Vibes', cursive" },
+      { text: '我好中意你', lang: '粤语', font: "'Ma Shan Zheng', cursive" },
+      { text: '吾爱汝', lang: '文言', font: "'Ma Shan Zheng', cursive" },
+    ];
+
+    const HEART_COLORS = [
+      '#ff6b9d', '#e84393', '#fd79a8', '#ff8fb1', '#ff4757',
+      '#ff6b81', '#c44569', '#f78fb3', '#cf6a87', '#e66767',
+      '#ff9ff3', '#feca57', '#ff6348', '#ee5a24', '#f8a5c2',
+    ];
+
+    function randColor() { return HEART_COLORS[Math.floor(Math.random() * HEART_COLORS.length)]; }
+    function rand(min, max) { return Math.random() * (max - min) + min; }
+
+    // =============================================
+    // Star background
+    // =============================================
+    const starCanvas = document.getElementById('starCanvas');
+    const ctx = starCanvas.getContext('2d');
+    let stars = [];
+    function resizeCanvas() {
+      starCanvas.width = window.innerWidth;
+      starCanvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    function createStars() {
+      const count = Math.floor((starCanvas.width * starCanvas.height) / 3000);
+      stars = Array.from({ length: count }, () => ({
+        x: Math.random() * starCanvas.width,
+        y: Math.random() * starCanvas.height,
+        r: Math.random() * 1.2 + 0.2,
+        a: Math.random() * 0.6 + 0.2,
+        ts: Math.random() * 0.012 + 0.003,
+        to: Math.random() * Math.PI * 2,
+      }));
+    }
+    createStars();
+    function drawStars(time) {
+      ctx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+      for (const s of stars) {
+        const twinkle = Math.sin(time * s.ts + s.to) * 0.4 + 0.6;
+        const a = s.a * twinkle * 0.5;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,200,230,${a})`;
+        ctx.fill();
+      }
+    }
+
+    // =============================================
+    // Big Heart made of small hearts
+    // =============================================
+    const bigHeartEl = document.getElementById('bigHeart');
+    const BH_POINTS = [];
+    const BH_COUNT = 160;
+    const BH_SCALE = Math.min(window.innerWidth, window.innerHeight) * 0.28;
+
+    function heartX(t) { return 16 * Math.pow(Math.sin(t), 3); }
+    function heartY(t) { return -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)); }
+
+    function buildBigHeart() {
+      bigHeartEl.innerHTML = '';
+      BH_POINTS.length = 0;
+      for (let i = 0; i < BH_COUNT; i++) {
+        const t = (i / BH_COUNT) * Math.PI * 2;
+        const px = heartX(t) * BH_SCALE / 16;
+        const py = heartY(t) * BH_SCALE / 16;
+        const el = document.createElement('div');
+        el.className = 'float-heart';
+        const size = rand(8, 16);
+        const color = randColor();
+        el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+          fill="${color}" opacity="${rand(0.5, 0.85).toFixed(2)}" /></svg>`;
+        el.style.position = 'absolute';
+        bigHeartEl.appendChild(el);
+        BH_POINTS.push({
+          el, baseX: px, baseY: py,
+          phase: Math.random() * Math.PI * 2,
+          speed: rand(0.001, 0.004),
+          drift: rand(2, 6),
+        });
+      }
+
+      // fill inside with more scattered hearts
+      for (let i = 0; i < 80; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const r = Math.random() * 0.85;
+        const px = heartX(angle) * BH_SCALE / 16 * r;
+        const py = heartY(angle) * BH_SCALE / 16 * r;
+        const el = document.createElement('div');
+        el.className = 'float-heart';
+        const size = rand(5, 11);
+        const color = randColor();
+        el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+          fill="${color}" opacity="${rand(0.2, 0.5).toFixed(2)}" /></svg>`;
+        el.style.position = 'absolute';
+        bigHeartEl.appendChild(el);
+        BH_POINTS.push({
+          el, baseX: px, baseY: py,
+          phase: Math.random() * Math.PI * 2,
+          speed: rand(0.001, 0.003),
+          drift: rand(1, 4),
+        });
+      }
+    }
+    buildBigHeart();
+
+    function animateBigHeart(time) {
+      const pulse = Math.sin(time * 0.001) * 0.06 + 1;
+      for (const p of BH_POINTS) {
+        p.phase += p.speed;
+        const dx = Math.sin(p.phase) * p.drift;
+        const dy = Math.cos(p.phase * 0.7) * p.drift * 0.6;
+        const x = (p.baseX + dx) * pulse;
+        const y = (p.baseY + dy) * pulse;
+        p.el.style.transform = `translate(${x}px, ${y}px)`;
+      }
+    }
+
+    // =============================================
+    // Hearts emanating from big heart
+    // =============================================
+    let emanations = [];
+    const MAX_EMANATIONS = 30;
+
+    function spawnEmanation() {
+      if (emanations.length >= MAX_EMANATIONS) return;
+      const t = Math.random() * Math.PI * 2;
+      const px = heartX(t) * BH_SCALE / 16;
+      const py = heartY(t) * BH_SCALE / 16;
+      const cx = window.innerWidth / 2 + px;
+      const cy = window.innerHeight / 2 + py;
+
+      const el = document.createElement('div');
+      el.className = 'float-heart';
+      const size = rand(6, 14);
+      const color = randColor();
+      el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+        fill="${color}" opacity="${rand(0.4, 0.8).toFixed(2)}" /></svg>`;
+      floatLayer.appendChild(el);
+
+      const dirX = px / (BH_SCALE / 16);
+      const dirY = py / (BH_SCALE / 16);
+      const len = Math.sqrt(dirX * dirX + dirY * dirY) || 1;
+      const speed = rand(0.5, 1.5);
+
+      emanations.push({
+        el, x: cx, y: cy,
+        vx: (dirX / len) * speed + rand(-0.2, 0.2),
+        vy: (dirY / len) * speed + rand(-0.2, 0.2) - 0.3,
+        life: 0,
+        maxLife: rand(100, 200),
+        rot: 0,
+        rotSpeed: rand(-2, 2),
+      });
+    }
+
+    function updateEmanations() {
+      for (let i = emanations.length - 1; i >= 0; i--) {
+        const e = emanations[i];
+        e.x += e.vx; e.y += e.vy;
+        e.rot += e.rotSpeed;
+        e.life++;
+        const prog = e.life / e.maxLife;
+        const fade = prog < 0.1 ? prog / 0.1 : prog > 0.5 ? (1 - prog) / 0.5 : 1;
+        e.el.style.transform = `translate(${e.x}px,${e.y}px) rotate(${e.rot}deg) scale(${0.3 + fade * 0.7})`;
+        e.el.style.opacity = fade * 0.7;
+        e.el.style.left = '0'; e.el.style.top = '0';
+        if (e.life >= e.maxLife) {
+          e.el.parentNode?.removeChild(e.el);
+          emanations.splice(i, 1);
+        }
+      }
+    }
+
+    // =============================================
+    // Continuous floating hearts
+    // =============================================
+    const floatLayer = document.getElementById('floatLayer');
+    let floaters = [];
+    const MAX_FLOATERS = 50;
+
+    function spawnFloater() {
+      if (floaters.length >= MAX_FLOATERS) return;
+      const el = document.createElement('div');
+      el.className = 'float-heart';
+      const size = rand(8, 24);
+      const color = randColor();
+      el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+        fill="${color}" opacity="${rand(0.3, 0.7).toFixed(2)}" /></svg>`;
+      floatLayer.appendChild(el);
+
+      const side = Math.random();
+      let x, y, vx, vy;
+      if (side < 0.5) {
+        x = rand(0, window.innerWidth);
+        y = window.innerHeight + 20;
+        vx = rand(-0.5, 0.5);
+        vy = -rand(0.4, 1.2);
+      } else if (side < 0.7) {
+        x = -20;
+        y = rand(window.innerHeight * 0.3, window.innerHeight * 0.8);
+        vx = rand(0.3, 0.8);
+        vy = -rand(0.1, 0.5);
+      } else if (side < 0.9) {
+        x = window.innerWidth + 20;
+        y = rand(window.innerHeight * 0.3, window.innerHeight * 0.8);
+        vx = -rand(0.3, 0.8);
+        vy = -rand(0.1, 0.5);
+      } else {
+        x = rand(window.innerWidth * 0.2, window.innerWidth * 0.8);
+        y = window.innerHeight + 20;
+        vx = rand(-0.3, 0.3);
+        vy = -rand(0.8, 1.5);
+      }
+
+      floaters.push({
+        el, x, y, vx, vy,
+        wobble: Math.random() * Math.PI * 2,
+        wobbleSpeed: rand(0.01, 0.03),
+        rotSpeed: rand(-2, 2),
+        rot: 0,
+        life: 0,
+        maxLife: rand(300, 600),
+      });
+    }
+
+    function updateFloaters() {
+      for (let i = floaters.length - 1; i >= 0; i--) {
+        const f = floaters[i];
+        f.wobble += f.wobbleSpeed;
+        f.x += f.vx + Math.sin(f.wobble) * 0.6;
+        f.y += f.vy;
+        f.rot += f.rotSpeed;
+        f.life++;
+        const prog = f.life / f.maxLife;
+        const fade = prog < 0.1 ? prog / 0.1 : prog > 0.7 ? (1 - prog) / 0.3 : 1;
+        f.el.style.transform = `translate(${f.x}px, ${f.y}px) rotate(${f.rot}deg) scale(${0.3 + fade * 0.7})`;
+        f.el.style.opacity = fade;
+        f.el.style.left = '0'; f.el.style.top = '0';
+        if (f.life >= f.maxLife) {
+          f.el.parentNode?.removeChild(f.el);
+          floaters.splice(i, 1);
+        }
+      }
+    }
+
+    // =============================================
+    // "I love you" floating texts
+    // =============================================
+    const textLayer = document.getElementById('textLayer');
+    let ilyTexts = [];
+    const MAX_ILY = 20;
+
+    function spawnIlyText(px, py) {
+      if (ilyTexts.length >= MAX_ILY) {
+        const old = ilyTexts.shift();
+        old.el.parentNode?.removeChild(old.el);
+      }
+      const data = LOVE_TEXTS[Math.floor(Math.random() * LOVE_TEXTS.length)];
+      const el = document.createElement('div');
+      el.className = 'ily-text';
+      el.textContent = data.text;
+      const size = rand(14, 28);
+      const color = randColor();
+      el.style.fontFamily = data.font;
+      el.style.fontSize = size + 'px';
+      el.style.color = color;
+      el.style.opacity = '0';
+      textLayer.appendChild(el);
+
+      const x = px !== undefined ? px : rand(50, window.innerWidth - 150);
+      const y = py !== undefined ? py : rand(50, window.innerHeight - 50);
+
+      ilyTexts.push({
+        el, x, y,
+        vx: rand(-0.3, 0.3),
+        vy: -rand(0.2, 0.6),
+        life: 0,
+        maxLife: rand(200, 400),
+      });
+    }
+
+    function updateIlyTexts() {
+      for (let i = ilyTexts.length - 1; i >= 0; i--) {
+        const t = ilyTexts[i];
+        t.x += t.vx;
+        t.y += t.vy;
+        t.life++;
+        const prog = t.life / t.maxLife;
+        const fade = prog < 0.15 ? prog / 0.15 : prog > 0.6 ? (1 - prog) / 0.4 : 1;
+        t.el.style.transform = `translate(${t.x}px, ${t.y}px)`;
+        t.el.style.opacity = fade * 0.7;
+        t.el.style.left = '0'; t.el.style.top = '0';
+        if (t.life >= t.maxLife) {
+          t.el.parentNode?.removeChild(t.el);
+          ilyTexts.splice(i, 1);
+        }
+      }
+    }
+
+    // =============================================
+    // Click / Touch burst
+    // =============================================
+    const interactLayer = document.getElementById('interactLayer');
+    let bursts = [];
+
+    function spawnBurst(cx, cy) {
+      const heartCount = Math.floor(rand(15, 25));
+      for (let i = 0; i < heartCount; i++) {
+        const el = document.createElement('div');
+        el.className = 'float-heart';
+        const size = rand(8, 20);
+        const color = randColor();
+        el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+          fill="${color}" /></svg>`;
+        interactLayer.appendChild(el);
+
+        const angle = (Math.PI * 2 / heartCount) * i + rand(-0.3, 0.3);
+        const speed = rand(2, 6);
+        bursts.push({
+          el, x: cx, y: cy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 2,
+          gravity: 0.04,
+          rotSpeed: rand(-6, 6),
+          rot: 0,
+          life: 0,
+          maxLife: rand(50, 90),
+        });
+      }
+
+      // also spawn "I love you" at click
+      spawnIlyText(cx - 40, cy - 30);
+    }
+
+    function updateBursts() {
+      for (let i = bursts.length - 1; i >= 0; i--) {
+        const b = bursts[i];
+        b.x += b.vx; b.y += b.vy;
+        b.vy += b.gravity; b.vx *= 0.98;
+        b.rot += b.rotSpeed;
+        b.life++;
+        const prog = b.life / b.maxLife;
+        const fade = prog > 0.4 ? (1 - prog) / 0.6 : 1;
+        b.el.style.transform = `translate(${b.x}px,${b.y}px) rotate(${b.rot}deg) scale(${0.2 + fade * 0.8})`;
+        b.el.style.opacity = fade;
+        b.el.style.left = '0'; b.el.style.top = '0';
+        if (b.life >= b.maxLife) {
+          b.el.parentNode?.removeChild(b.el);
+          bursts.splice(i, 1);
+        }
+      }
+    }
+
+    document.addEventListener('click', (e) => { spawnBurst(e.clientX, e.clientY); });
+    document.addEventListener('touchstart', (e) => {
+      for (const t of e.touches) spawnBurst(t.clientX, t.clientY);
+    }, { passive: true });
+
+    // =============================================
+    // Mouse trail hearts
+    // =============================================
+    let trails = [];
+    let lastTrailTime = 0;
+    const MAX_TRAILS = 25;
+
+    document.addEventListener('mousemove', (e) => {
+      const now = Date.now();
+      if (now - lastTrailTime < 100) return;
+      lastTrailTime = now;
+      if (trails.length >= MAX_TRAILS) return;
+
+      const el = document.createElement('div');
+      el.className = 'trail-heart';
+      const size = rand(6, 12);
+      const color = randColor();
+      el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+        fill="${color}" /></svg>`;
+      interactLayer.appendChild(el);
+
+      trails.push({
+        el, x: e.clientX + rand(-6, 6), y: e.clientY + rand(-6, 6),
+        vy: -rand(0.3, 0.6),
+        vx: rand(-0.3, 0.3),
+        life: 0,
+        maxLife: rand(35, 60),
+        rot: 0, rotSpeed: rand(-3, 3),
+      });
+    });
+
+    function updateTrails() {
+      for (let i = trails.length - 1; i >= 0; i--) {
+        const t = trails[i];
+        t.x += t.vx; t.y += t.vy; t.rot += t.rotSpeed;
+        t.life++;
+        const prog = t.life / t.maxLife;
+        const fade = prog > 0.3 ? (1 - prog) / 0.7 : 1;
+        t.el.style.transform = `translate(${t.x}px,${t.y}px) rotate(${t.rot}deg) scale(${fade})`;
+        t.el.style.opacity = fade * 0.8;
+        t.el.style.left = '0'; t.el.style.top = '0';
+        if (t.life >= t.maxLife) {
+          t.el.parentNode?.removeChild(t.el);
+          trails.splice(i, 1);
+        }
+      }
+    }
+
+    // =============================================
+    // Keyboard: any key spawns hearts
+    // =============================================
+    document.addEventListener('keydown', () => {
+      const x = rand(window.innerWidth * 0.2, window.innerWidth * 0.8);
+      const y = rand(window.innerHeight * 0.3, window.innerHeight * 0.7);
+      spawnBurst(x, y);
+    });
+
+    // =============================================
+    // Animation loop
+    // =============================================
+    let frame = 0;
+
+    function animate(time) {
+      frame++;
+
+      drawStars(time);
+
+      animateBigHeart(time);
+
+      if (frame % 10 === 0) spawnFloater();
+      updateFloaters();
+
+      if (frame % 6 === 0) spawnEmanation();
+      updateEmanations();
+
+      if (frame % 100 === 0) spawnIlyText();
+      updateIlyTexts();
+
+      updateBursts();
+      updateTrails();
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+    window.addEventListener('resize', () => {
+      resizeCanvas(); createStars();
+    });
+
+    // initial burst of "I love you" texts
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => spawnIlyText(), i * 300);
+    }
+  </script>
+</body>
+</html>
